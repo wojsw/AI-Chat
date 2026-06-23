@@ -1,126 +1,137 @@
+'use client';
+
 import Link from 'next/link';
-import { ChevronDown, FileText, History, MessageSquare, MessageSquarePlus, Sparkles } from 'lucide-react';
+import { Clock3, MessageSquare, MessageSquarePlus, PanelLeft, Sparkles, X } from 'lucide-react';
 import type { ChatSummary } from '@/lib/types';
 
-const navSections = [
-  {
-    title: 'CHAT',
-    items: [{ label: 'Chat', icon: MessageSquare, href: '/' }],
-  },
-  {
-    title: 'CONTROL',
-    items: [{ label: 'Chat History', icon: History, href: '/' }],
-  },
-  {
-    title: 'AGENT',
-    items: [{ label: 'Skills', icon: Sparkles, href: '/' }],
-  },
-];
+const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+});
 
-export function Sidebar({ chats, activeChatId }: { chats: ChatSummary[]; activeChatId: string }) {
+type SidebarProps = {
+  chats: ChatSummary[];
+  activeChatId: string;
+  collapsed?: boolean;
+  onClose?: () => void;
+  onToggle?: () => void;
+};
+
+export function Sidebar({ chats, activeChatId, collapsed = false, onClose, onToggle }: SidebarProps) {
   return (
-    <aside className="flex h-full w-full flex-col border-r border-white/70 bg-white/75 text-slate-700 shadow-[inset_-1px_0_0_rgba(255,255,255,0.55)] backdrop-blur-xl md:w-72">
-      <div className="flex h-16 items-center justify-between border-b border-white/70 px-4">
-        <Link href="/" className="flex items-center gap-3" title="新建会话">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-500 to-violet-500 text-white shadow-lg shadow-blue-500/25">
-            <MessageSquarePlus className="h-4 w-4" />
+    <aside className="flex h-full w-full shrink-0 flex-col overflow-hidden border-r border-[#ececea] bg-[#f3f3f1] text-slate-900">
+      <div className={collapsed ? 'flex h-20 shrink-0 flex-col items-center justify-center gap-2 px-2' : 'flex h-16 shrink-0 items-center justify-between px-4'}>
+        <div className={collapsed ? 'flex items-center justify-center' : 'flex items-center gap-2'}>
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#4d6bfe] text-white shadow-sm shadow-blue-500/20">
+            <Sparkles className="h-4 w-4" />
           </div>
-          <div>
-            <h1 className="text-sm font-bold tracking-tight text-slate-950">AI Flow</h1>
-            <p className="text-[11px] text-slate-400">Local Chat Workspace</p>
-          </div>
-        </Link>
-        <button
-          type="button"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-white/80 bg-white/75 text-slate-500 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:text-blue-600 hover:shadow-md"
-          aria-label="收起侧边栏"
-        >
-          <ChevronDown className="h-4 w-4 rotate-90" />
-        </button>
-      </div>
-
-      <div className="flex-1 overflow-y-auto px-3 py-4">
-        <nav className="space-y-5">
-          {navSections.map(section => (
-            <div key={section.title}>
-              <div className="mb-2 flex items-center justify-between px-1 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">
-                <span>{section.title}</span>
-                <ChevronDown className="h-3 w-3 text-slate-300" />
-              </div>
-              <div className="space-y-1.5">
-                {section.items.map(item => {
-                  const Icon = item.icon;
-                  const active = item.label === 'Chat';
-                  return (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      className={`flex h-10 items-center gap-3 rounded-xl px-3 text-sm font-medium transition ${
-                        active
-                          ? 'border border-blue-200/80 bg-gradient-to-r from-blue-50 to-indigo-50 text-slate-900 shadow-sm shadow-blue-500/10'
-                          : 'text-slate-500 hover:bg-white/75 hover:text-slate-900 hover:shadow-sm'
-                      }`}
-                    >
-                      <Icon className={`h-4 w-4 ${active ? 'text-blue-600' : 'text-slate-400'}`} />
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </div>
+          {!collapsed && (
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">AI Flow</p>
+              <h1 className="text-sm font-semibold tracking-tight text-slate-900">智能对话</h1>
             </div>
-          ))}
-        </nav>
+          )}
+        </div>
 
-        <div className="mt-6">
-          <div className="mb-2 flex items-center justify-between px-1 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">
-            <span>RECENT</span>
-            <ChevronDown className="h-3 w-3 text-slate-300" />
-          </div>
-          <div className="space-y-1.5">
-            {chats.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-slate-200 bg-white/75 p-3 text-xs text-slate-400 shadow-sm">
-                暂无历史会话
-              </div>
-            ) : (
-              chats.map(chat => {
-                const active = chat.id === activeChatId;
-                return (
-                  <Link
-                    key={chat.id}
-                    href={`/chat/${chat.id}`}
-                    className={`block rounded-xl border px-3 py-2.5 transition ${
-                      active
-                        ? 'border-blue-200/80 bg-white text-slate-950 shadow-sm shadow-blue-500/10'
-                        : 'border-transparent text-slate-500 hover:border-white/80 hover:bg-white/75 hover:text-slate-900 hover:shadow-sm'
-                    }`}
-                  >
-                    <div className="line-clamp-2 text-sm font-medium">{chat.title}</div>
-                    <div className="mt-1 text-[11px] text-slate-400">
-                      {new Intl.DateTimeFormat('zh-CN', {
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      }).format(new Date(chat.updatedAt))}
-                    </div>
-                  </Link>
-                );
-              })
-            )}
-          </div>
+        <div className={collapsed ? 'flex items-center justify-center' : 'flex items-center gap-2'}>
+          {onToggle && (
+            <button
+              type="button"
+              aria-label={collapsed ? '展开侧边栏' : '收起侧边栏'}
+              onClick={onToggle}
+              className="hidden h-9 w-9 items-center justify-center rounded-xl bg-white/90 text-slate-500 shadow-sm transition hover:text-[#4d6bfe] md:flex"
+            >
+              <PanelLeft className={`h-4 w-4 transition-transform ${collapsed ? 'rotate-180' : ''}`} />
+            </button>
+          )}
+          {onClose && !collapsed && (
+            <button
+              type="button"
+              aria-label="关闭侧边栏"
+              onClick={onClose}
+              className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/90 text-slate-500 shadow-sm transition hover:text-slate-950 md:hidden"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </div>
 
-      <div className="border-t border-white/70 p-3">
-        <Link href="/" className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-500 transition hover:bg-white/75 hover:text-slate-900 hover:shadow-sm">
-          <FileText className="h-4 w-4 text-slate-400" />
-          Docs
+      <div className={collapsed ? 'flex justify-center px-2 pb-3' : 'px-3 pb-3'}>
+        <Link
+          href="/"
+          title="开启新对话"
+          className={
+            collapsed
+              ? 'flex h-11 w-11 items-center justify-center rounded-xl bg-[#4d6bfe] text-white shadow-sm shadow-blue-500/20 transition hover:bg-[#3f5bef]'
+              : 'flex h-11 items-center justify-center gap-2 rounded-xl bg-[#4d6bfe] px-4 text-sm font-medium text-white shadow-sm shadow-blue-500/20 transition hover:bg-[#3f5bef]'
+          }
+        >
+          <MessageSquarePlus className="h-4 w-4" />
+          {!collapsed && '开启新对话'}
         </Link>
-        <div className="mt-2 flex items-center justify-between rounded-2xl border border-white/80 bg-white/75 px-3 py-2 text-[11px] font-semibold text-slate-500 shadow-sm">
-          <span>VERSION</span>
-          <span className="text-slate-700">v1.0.0</span>
-          <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_0_4px_rgba(16,185,129,0.12)]" />
+      </div>
+
+      {collapsed ? (
+        <div className="mx-auto mb-2 h-px w-8 bg-slate-200" />
+      ) : (
+        <div className="flex items-center justify-between px-4 pb-2 pt-2">
+          <div className="text-xs font-medium text-slate-500">历史记录</div>
+          <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-slate-400">{chats.length}条</span>
         </div>
+      )}
+
+      <div className={collapsed ? 'min-h-0 flex-1 overflow-y-auto px-2 pb-4' : 'min-h-0 flex-1 overflow-y-auto px-2 pb-4'}>
+        {chats.length === 0 ? (
+          collapsed ? (
+            <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white/60 text-slate-400" title="暂无历史会话">
+              <MessageSquare className="h-4 w-4" />
+            </div>
+          ) : (
+            <div className="mx-2 rounded-xl border border-dashed border-slate-200 bg-white/60 p-4 text-center text-sm text-slate-500">暂无历史会话</div>
+          )
+        ) : (
+          <div className={collapsed ? 'flex flex-col items-center gap-1' : 'space-y-1'}>
+            {chats.map(chat => {
+              const active = chat.id === activeChatId;
+              return collapsed ? (
+                <Link
+                  key={chat.id}
+                  href={`/chat/${chat.id}`}
+                  title={chat.title}
+                  className={`flex h-11 w-11 items-center justify-center rounded-xl transition ${
+                    active ? 'bg-white text-[#4d6bfe] shadow-sm' : 'text-slate-400 hover:bg-white/70 hover:text-[#4d6bfe]'
+                  }`}
+                >
+                  <MessageSquare className="h-4 w-4" />
+                </Link>
+              ) : (
+                <Link
+                  key={chat.id}
+                  href={`/chat/${chat.id}`}
+                  className={`group block rounded-xl px-3 py-2.5 transition ${
+                    active ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-600 hover:bg-white/70 hover:text-slate-950'
+                  }`}
+                >
+                  <div className="flex items-start gap-2.5">
+                    <div className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${active ? 'bg-[#eff3ff] text-[#4d6bfe]' : 'bg-white/70 text-slate-400 group-hover:text-[#4d6bfe]'}`}>
+                      <MessageSquare className="h-3.5 w-3.5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">{chat.title}</p>
+                      <div className="mt-1 flex items-center gap-1.5 text-[11px] text-slate-400">
+                        <Clock3 className="h-3 w-3" />
+                        {dateFormatter.format(new Date(chat.updatedAt))}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </div>
     </aside>
   );
